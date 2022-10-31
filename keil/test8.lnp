@@ -1,0 +1,6 @@
+"main.obj",
+"LCD1602.obj",
+"Delay.obj",
+"Display.obj",
+"TimerControl.obj" 
+TO "test8" 

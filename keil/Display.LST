@@ -1,0 +1,103 @@
+C51 COMPILER V9.53.0.0   DISPLAY                                                           10/31/2022 18:34:52 PAGE 1   
+
+
+C51 COMPILER V9.53.0.0, COMPILATION OF MODULE DISPLAY
+OBJECT MODULE PLACED IN Display.OBJ
+COMPILER INVOKED BY: K:\keil5\C51\BIN\C51.EXE Display.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND TABS(2)
+
+line level    source
+
+   1          #include "Display.h"
+   2          #include "LCD1602.h"
+   3          
+   4          
+   5          char menu[16]="Time  Set  Timer";
+   6          char setting[12]="date or time";
+   7          static unsigned char code number[10] = {"0123456789"};
+   8          
+   9          void display_menu()
+  10          {
+  11   1        int i;
+  12   1        write_command(LINE1);
+  13   1        for(i=0; i<16; i++)
+  14   1          write_data(menu[i]);
+  15   1      }
+  16          
+  17          void display_time(short hour, short minute, short second, short month, short day)
+  18          {
+  19   1        
+  20   1        write_command(LINE1);
+  21   1        write_data(number[month/10]);write_data(number[month%10]);write_data('M');
+  22   1        write_data('\x20');
+  23   1        write_data(number[day/10]);write_data(number[day%10]);write_data('D');
+  24   1        
+  25   1        write_command(LINE2);
+  26   1        write_data(number[hour/10]);write_data(number[hour%10]);write_data('H');
+  27   1        write_data('\x20');
+  28   1        write_data(number[minute/10]);write_data(number[minute%10]);write_data('M');
+  29   1        write_data('\x20');
+  30   1        write_data(number[second/10]);write_data(number[second%10]);write_data('S');
+  31   1        
+  32   1      }
+  33          
+  34          void display_setting()
+  35          {
+  36   1        int i;
+  37   1        write_command(LINE1);
+  38   1        for(i=0;i<12;i++)
+  39   1          write_data(setting[i]);
+  40   1      }
+  41          
+  42          void display_setting_date(short month, short day)
+  43          {
+  44   1        write_command(LINE1);
+  45   1        write_data(number[month/10]);write_data(number[month%10]);write_data('M');
+  46   1        write_data('\x20');
+  47   1        write_data(number[day/10]);write_data(number[day%10]);write_data('D');
+  48   1        
+  49   1      }
+  50          
+  51          void display_setting_time(short hour, short minute, short second)
+  52          {
+  53   1        write_command(LINE1);
+  54   1        write_data(number[hour/10]);write_data(number[hour%10]);write_data('H');
+  55   1        write_data('\x20');
+C51 COMPILER V9.53.0.0   DISPLAY                                                           10/31/2022 18:34:52 PAGE 2   
+
+  56   1        write_data(number[minute/10]);write_data(number[minute%10]);write_data('M');
+  57   1        write_data('\x20');
+  58   1        write_data(number[second/10]);write_data(number[second%10]);write_data('S');
+  59   1        
+  60   1      }
+  61          
+  62          void display_timer(short minute, short second, short micro)
+  63          {
+  64   1        write_command(LINE1);
+  65   1        write_data(number[minute/10]);write_data(number[minute%10]);
+  66   1        write_data(':');
+  67   1        write_data(number[second/10]);write_data(number[second%10]);
+  68   1        write_data(':');
+  69   1        write_data(number[micro/10]);write_data(number[micro%10]);
+  70   1      }
+  71          
+  72          void display_alarm()
+  73          {
+  74   1        write_command(LINE1);
+  75   1        write_data('!');
+  76   1        write_command(LINE2);
+  77   1        write_data('!');
+  78   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   1079    ----
+   CONSTANT SIZE    =     10    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     28      30
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,101 @@
+C51 COMPILER V9.53.0.0   LCD1602                                                           10/31/2022 18:34:52 PAGE 1   
+
+
+C51 COMPILER V9.53.0.0, COMPILATION OF MODULE LCD1602
+OBJECT MODULE PLACED IN LCD1602.OBJ
+COMPILER INVOKED BY: K:\keil5\C51\BIN\C51.EXE LCD1602.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND TABS(2)
+
+line level    source
+
+   1          #include "LCD1602.h"
+   2          #include <REGX51.H>
+   3          
+   4          /**
+   5          LCD1602
+   6          **/
+   7          sbit E = P1^0;
+   8          sbit RS = P1^2;
+   9          sbit RW = P1^1;
+  10          sbit IS_BUSY = P0^7;
+  11          
+  12          void delay1602(int x, int y)
+  13          {
+  14   1          int i, j;
+  15   1          for (i = 0; i < x; i++)
+  16   1            for (j = 0; j < y; j++);
+  17   1      }
+  18          void adjust_busy()
+  19          {
+  20   1        unsigned char temp = 1;
+  21   1        unsigned int i = 100;
+  22   1        while (temp && i)
+  23   1        {
+  24   2          P0 = 0xff;
+  25   2          E = 0;
+  26   2          delay1602(7, 7);
+  27   2          RS = 0;
+  28   2          RW = 1; 
+  29   2          delay1602(5, 5);
+  30   2          E = 1;
+  31   2          delay1602(5, 5);
+  32   2          temp = IS_BUSY;
+  33   2          delay1602(15, 15);
+  34   2          E = 0;  
+  35   2          i--; 
+  36   2        }
+  37   1      }
+  38          void write_command(int com)
+  39          {
+  40   1        adjust_busy();
+  41   1        E = 0;
+  42   1        RS = 0;
+  43   1        RW = 0;
+  44   1        P0 = com;
+  45   1        delay1602(5, 5);
+  46   1        E = 1;
+  47   1        delay1602(25, 25);   
+  48   1        E = 0; 
+  49   1      }
+  50          void write_data(int dat)
+  51          {
+  52   1        adjust_busy();
+  53   1        E = 0;
+  54   1        RS = 1;
+  55   1        RW = 0;
+C51 COMPILER V9.53.0.0   LCD1602                                                           10/31/2022 18:34:52 PAGE 2   
+
+  56   1        P0 = dat;
+  57   1        delay1602(5, 5);
+  58   1        E = 1;
+  59   1        delay1602(25, 25);   
+  60   1        E = 0; 
+  61   1      }
+  62          
+  63          void clear1602()
+  64          {
+  65   1        write_command(0x01);
+  66   1        write_command(0x06);
+  67   1        write_command(0x0c);
+  68   1      }
+  69          void LCD_init()
+  70          {
+  71   1        write_command(0x38);
+  72   1        delay1602(20, 20);
+  73   1        write_command(0x0c);
+  74   1        delay1602(20, 20);
+  75   1        write_command(0x06);    
+  76   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    245    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       6
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

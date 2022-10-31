@@ -1,0 +1,228 @@
+C51 COMPILER V9.53.0.0   MAIN                                                              10/31/2022 18:35:33 PAGE 1   
+
+
+C51 COMPILER V9.53.0.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN main.OBJ
+COMPILER INVOKED BY: K:\keil5\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND TABS(2)
+
+line level    source
+
+   1          #include <REGX51.H>
+   2          #include "Delay.h"
+   3          #include "TimerControl.h"
+   4          #include "Display.h"
+   5          #include "LCD1602.h"
+   6          
+   7          static int num = 0, number = 0, ring_num = 0;
+   8          short hour = 16, minute = 59, second = 52, micro = 0, month = 10, day = 15;
+   9          short temp_minute = 0, temp_second = 0;
+  10          short flag = 0, ring = 0;
+  11          
+  12          sbit MenuButton = P2^0;
+  13          sbit TimeButton = P2^1;
+  14          sbit SetButton = P2^2;
+  15          sbit TimerButton = P2^3;
+  16          sbit SS_1date = P2^4;
+  17          sbit TR_2time = P2^5;
+  18          sbit Clear_Hour = P2^6;
+  19          sbit Month_Minute = P2^7;
+  20          sbit Day_Second = P3^0;
+  21          sbit RING = P1^3;
+  22          
+  23          void main()
+  24          {
+  25   1        TMOD = 0x22;
+  26   1        TH0 = 0x06;
+  27   1        TL0 = 0x06;
+  28   1        TH1 = 0x06;
+  29   1        TL1 = 0x06;
+  30   1        PT0 = 0;
+  31   1        PT1 = 1;
+  32   1        EA = 1;
+  33   1        P2 = 0xff;
+  34   1        P3_0 = 1;
+  35   1        Delay1ms(500);
+  36   1        LCD_init();
+  37   1        Delay1ms(500);
+  38   1        clear1602();
+  39   1        Timer1(STOP);
+  40   1        Timer0(STOP);
+  41   1        RING = 0;
+  42   1        Timer1(START);
+  43   1        
+  44   1        while(1)
+  45   1        {
+  46   2      //    a:
+  47   2          display_menu();
+  48   2          if(TimeButton == 0)
+  49   2          {
+  50   3            clear1602();
+  51   3            while(MenuButton)
+  52   3            {
+  53   4              display_time(hour, minute, second, month, day);     
+  54   4            }
+  55   3            clear1602();
+C51 COMPILER V9.53.0.0   MAIN                                                              10/31/2022 18:35:33 PAGE 2   
+
+  56   3          }
+  57   2          else if(SetButton == 0)
+  58   2          {
+  59   3            clear1602();
+  60   3            display_setting();
+  61   3            while(1)
+  62   3            {
+  63   4              if(SS_1date == 0)
+  64   4              {
+  65   5                clear1602();
+  66   5                display_setting_date(0, 0);
+  67   5                while(MenuButton)
+  68   5                {
+  69   6                  display_setting_date(month, day);
+  70   6                  if(!Month_Minute)
+  71   6                  {
+  72   7                    Delay1ms(20);
+  73   7                    ++month;
+  74   7                    if(month >= 13) month = 1;
+  75   7                  }
+  76   6                  else if(!Day_Second)
+  77   6                  {
+  78   7                    Delay1ms(20);
+  79   7                    ++day;
+  80   7                    if(day >= 31) day = 1;
+  81   7                  }
+  82   6                }
+  83   5                break;
+  84   5              }
+  85   4              else if(TR_2time == 0)
+  86   4              {
+  87   5                clear1602();
+  88   5                display_setting_time(0, 0, 0);
+  89   5                while(MenuButton)
+  90   5                {
+  91   6                  display_setting_time(hour, minute, second);
+  92   6                  if(!Clear_Hour)
+  93   6                  {
+  94   7                    Delay1ms(20);
+  95   7                    ++hour;
+  96   7                    if(hour >= 24) hour = 0;
+  97   7                  }
+  98   6                  else if(!Month_Minute)
+  99   6                  {
+ 100   7                    Delay1ms(20);
+ 101   7                    ++minute;
+ 102   7                    if(minute >= 60) minute = 0;
+ 103   7                  }
+ 104   6                  else if(!Day_Second)
+ 105   6                  {
+ 106   7                    Delay1ms(20);
+ 107   7                    ++second;
+ 108   7                    if(second >= 60) second = 0;
+ 109   7                  }
+ 110   6                }
+ 111   5                break;
+ 112   5              }
+ 113   4            }
+ 114   3            clear1602();
+ 115   3          }
+ 116   2          else if(TimerButton == 0)
+ 117   2          {
+C51 COMPILER V9.53.0.0   MAIN                                                              10/31/2022 18:35:33 PAGE 3   
+
+ 118   3            clear1602();
+ 119   3            while(MenuButton)
+ 120   3            {
+ 121   4              if(!SS_1date && !flag)
+ 122   4              {flag=1;}
+ 123   4              else if(flag && !SS_1date)
+ 124   4              {flag = 0;number = 0;}
+ 125   4              if(!TR_2time)
+ 126   4              {temp_minute = 0;temp_second = 0;micro = 0;flag = 0;number = 0;}
+ 127   4              display_timer(temp_minute, temp_second, micro);
+ 128   4            }
+ 129   3            flag = 0;micro = 0;temp_minute = 0;temp_second = 0;
+ 130   3            clear1602();
+ 131   3          }
+ 132   2        }
+ 133   1        
+ 134   1      }
+ 135          
+ 136          
+ 137          Time1() interrupt 3
+ 138          {
+ 139   1        ++num;
+ 140   1        if(num >= 4000)
+ 141   1        {
+ 142   2          ++second;
+ 143   2          num = 0;
+ 144   2        }
+ 145   1        if(second >= 60) {++minute;second = 0;}
+ 146   1        if(minute >= 60) {++hour;minute = 0;}
+ 147   1        if(hour >= 24) {++day;hour = 0;}
+ 148   1        if(day >= 30) {++month;day = 0;} 
+ 149   1        if(month >= 12) month = 0;
+ 150   1        
+ 151   1        if(!minute && !second)
+ 152   1        {
+ 153   2          ring = 1;
+ 154   2          Timer0(START);
+ 155   2        }
+ 156   1        if(ring == 0)
+ 157   1        {Timer0(STOP);}
+ 158   1        if(flag)
+ 159   1        {
+ 160   2          ++number;
+ 161   2          if(number >= 400)
+ 162   2          {
+ 163   3            ++micro;
+ 164   3            number = 0;
+ 165   3          }
+ 166   2          if(micro >= 10) {++temp_second;micro = 0;}
+ 167   2          if(temp_second >= 60) {++temp_minute;temp_second = 0;}
+ 168   2          if(temp_minute >= 60) {temp_minute = 0;}
+ 169   2        }
+ 170   1      }
+ 171          
+ 172          static int a=0, b=600;
+ 173          Time0() interrupt 1
+ 174          {
+ 175   1        ++ring_num;
+ 176   1        if(a != 10 && ring_num >= 50)
+ 177   1        {
+ 178   2          ring_num = 0;
+ 179   2          RING = ~RING;
+C51 COMPILER V9.53.0.0   MAIN                                                              10/31/2022 18:35:33 PAGE 4   
+
+ 180   2          ++a;
+ 181   2        }
+ 182   1        else if(a >= 10)
+ 183   1        {
+ 184   2          RING = ~RING;
+ 185   2          --b;
+ 186   2          if(b <= 0)
+ 187   2          {
+ 188   3            a=0;
+ 189   3            b=200;
+ 190   3          }
+ 191   2        }
+ 192   1        if(!Clear_Hour)
+ 193   1        {
+ 194   2          ring = 0;
+ 195   2        }
+ 196   1      }
+ 197          
+ 198          
+ 199          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    961    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     30    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
